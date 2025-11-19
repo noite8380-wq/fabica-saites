@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fomulario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div>
+        <form action="">
+            <fieldset>
+                <legend>fale conoso</legend>
+                <div>
+                    <label for="nome">nome completo</label>
+                    <input id="nome" nome="nome" type="text">
+                </div>
+                <div>
+                    <label for="email">E-mail</label>
+                    <input id="email" nome="email" type="email">
+                </div>
+                <div>
+                    <label for="assunto">assunto</label>
+                    <select name="assunto" id="assunto">
+                        <option value="feedback">Retorno sobre o projeto</option>
+                        <option value="sugest">Sugestão para projeto</option>
+                        <option value="new-projeto">Novo projeto</option>
+                        <option value="Mensagem">Uma mensagem</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="mensagem">Mensagem:</label>
+                    <textarea name="mensagem" id="mensagem" cols="82" rows="20"></textarea>
+                </div>
+            </fieldset>
+            <button type="submit" href="index.html" target="_blank" rel="noopener noreferrer">Enviar</button>
+        </form>
+    </div>
+    <script>
+        function validFrom() {
+            const email = document.getElementById('email');
+            let emailText = email.value.trim();
+            let valido = false;
+            if (emailText.includes("@")) {
+                valido = true;
+            }
+            else {
+                valido = false;
+            }
+
+            if (partesEmail[0].length >= 7 && partesEmail[0].length <= 127) {
+                console.log("O tamanho está emtre 7 e 127");
+                valido = true;
+            }
+            else {
+                valido = false;
+            }
+            const nome = document.getElementById("nome");
+            let nomeText = nome.value.trim();
+            if (nome.length >= 3) {
+                console.log("Nome atende ao tamanho mínimo");
+                valido = true
+            }
+            else{
+                valido = false
+            };
+            const textArea = document.getElementById("img");
+            let textTexto = textArea.value.trim();
+            if (textTexto === "") {
+                console.log("Texto não ser vazio!")
+                valido=true
+            }
+            else{
+                valido=false
+            }
+        }
+    </script>
+</body>
+
+</html>
