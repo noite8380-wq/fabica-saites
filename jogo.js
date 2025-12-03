@@ -8,24 +8,24 @@ const puzzleBox = document.getElementById("puzzle-box");
 const nextBtn = document.getElementById("next-btn");
 
 // FUNÇÕES BÁSICAS
-function toggleTheme(){ document.body.classList.toggle("light"); }
+function toggleTheme() { document.body.classList.toggle("light"); }
 
-function saveForm(){
+function saveForm() {
     const name = document.getElementById("playerName").value.trim();
     const age = parseInt(document.getElementById("playerAge").value);
     const code = document.getElementById("playerCode").value.trim();
-    if(!name || !age || !code){ alert("Preencha todos os campos."); return; }
-    if(age<16){ alert("Você precisa ter 16 anos ou mais."); return; }
+    if (!name || !age || !code) { alert("Preencha todos os campos."); return; }
+    if (age < 16) { alert("Você precisa ter 16 anos ou mais."); return; }
     localStorage.setItem("sf_user", JSON.stringify({
-        name, age, code, progress:{chapter:0, part:0, puzzle:0}, inventory:[], state:{medo:0, coragem:50, sanidade:100}
+        name, age, code, progress: { chapter: 0, part: 0, puzzle: 0 }, inventory: [], state: { medo: 0, coragem: 50, sanidade: 100 }
     }));
-    formSection.style.display="none"; 
-    contractSection.style.display="block";
+    formSection.style.display = "none";
+    contractSection.style.display = "block";
 }
 
-function acceptContract(){
-    contractSection.style.display="none";
-    gameSection.style.display="block";
+function acceptContract() {
+    contractSection.style.display = "none";
+    gameSection.style.display = "block";
     startGame();
 }
 
@@ -57,31 +57,31 @@ const chapters = [
 const puzzles = [
     // CAP 1 - 4 puzzles
     [
-        {q:"Escolha a runa correta:", options:["🔥 Fogo","🩸 Sangue","🌑 Sombra"], ans:"🩸 Sangue", reward:"Chave Arcana"},
-        {q:"Qual o código do elevador?", options:["1313","2525","4444"], ans:"1313", reward:"Cartão de Acesso"},
-        {q:"Escolha a porta certa:", options:["Esquerda","Direita","Centro"], ans:"Centro", reward:"Mapa da Escada"},
-        {q:"Qual objeto Rafael deve pegar?", options:["Celular","Chave","Lanterna"], ans:"Celular", reward:"Registro da Ligação"}
+        { q: "Escolha a runa correta:", options: ["🔥 Fogo", "🩸 Sangue", "🌑 Sombra"], ans: "🩸 Sangue", reward: "Chave Arcana" },
+        { q: "Qual o código do elevador?", options: ["1313", "2525", "4444"], ans: "1313", reward: "Cartão de Acesso" },
+        { q: "Escolha a porta certa:", options: ["Esquerda", "Direita", "Centro"], ans: "Centro", reward: "Mapa da Escada" },
+        { q: "Qual objeto Rafael deve pegar?", options: ["Celular", "Chave", "Lanterna"], ans: "Celular", reward: "Registro da Ligação" }
     ],
     // CAP 2 - 4 puzzles
     [
-        {q:"Qual a primeira palavra do diário?", options:["Segredo","Medo","Sombra"], ans:"Segredo", reward:"Medalhão do Sussurro"},
-        {q:"Escolha o símbolo certo:", options:["⚡ Raio","🌑 Sombra","🔥 Fogo"], ans:"🌑 Sombra", reward:"Amuleto do Vento"},
-        {q:"Qual parede olhar?", options:["Norte","Sul","Leste"], ans:"Norte", reward:"Chave de Ferro"},
-        {q:"Qual é o padrão de passos?", options:["Frente","Inverso","Circular"], ans:"Inverso", reward:"Tomo da Névoa"}
+        { q: "Qual a primeira palavra do diário?", options: ["Segredo", "Medo", "Sombra"], ans: "Segredo", reward: "Medalhão do Sussurro" },
+        { q: "Escolha o símbolo certo:", options: ["⚡ Raio", "🌑 Sombra", "🔥 Fogo"], ans: "🌑 Sombra", reward: "Amuleto do Vento" },
+        { q: "Qual parede olhar?", options: ["Norte", "Sul", "Leste"], ans: "Norte", reward: "Chave de Ferro" },
+        { q: "Qual é o padrão de passos?", options: ["Frente", "Inverso", "Circular"], ans: "Inverso", reward: "Tomo da Névoa" }
     ],
     // CAP 3 - 4 puzzles
     [
-        {q:"Qual figura observar primeiro?", options:["Encapuzada","Mão","Ponte"], ans:"Encapuzada", reward:"Tomos da Realidade"},
-        {q:"Qual símbolo acender?", options:["🩸 Sangue","🌑 Sombra","🔥 Fogo"], ans:"🩸 Sangue", reward:"Orbe da Memória"},
-        {q:"Escolha o caminho na ponte:", options:["Direita","Esquerda","Centro"], ans:"Centro", reward:"Chave do Labirinto"},
-        {q:"Qual item pegar antes de avançar?", options:["Candelabro","Tomo","Símbolo"], ans:"Tomo", reward:"Fragmento de Eco"}
+        { q: "Qual figura observar primeiro?", options: ["Encapuzada", "Mão", "Ponte"], ans: "Encapuzada", reward: "Tomos da Realidade" },
+        { q: "Qual símbolo acender?", options: ["🩸 Sangue", "🌑 Sombra", "🔥 Fogo"], ans: "🩸 Sangue", reward: "Orbe da Memória" },
+        { q: "Escolha o caminho na ponte:", options: ["Direita", "Esquerda", "Centro"], ans: "Centro", reward: "Chave do Labirinto" },
+        { q: "Qual item pegar antes de avançar?", options: ["Candelabro", "Tomo", "Símbolo"], ans: "Tomo", reward: "Fragmento de Eco" }
     ]
 ];
 
-let currentChapter=0, currentPart=0, currentPuzzle=0;
+let currentChapter = 0, currentPart = 0, currentPuzzle = 0;
 
 // INICIAR JOGO
-function startGame(){
+function startGame() {
     const saved = JSON.parse(localStorage.getItem("sf_user"));
     currentChapter = saved.progress.chapter;
     currentPart = saved.progress.part;
@@ -91,67 +91,67 @@ function startGame(){
 }
 
 // INVENTÁRIO
-function updateInventory(){
+function updateInventory() {
     const saved = JSON.parse(localStorage.getItem("sf_user"));
     invList.innerText = saved.inventory.join(", ") || "vazio";
 }
 
 // MOSTRAR HISTÓRIA
-function showStory(){
+function showStory() {
     storyBox.innerHTML = chapters[currentChapter][currentPart];
-    puzzleBox.style.display="none";
-    nextBtn.style.display="inline-block";
+    puzzleBox.style.display = "none";
+    nextBtn.style.display = "inline-block";
 }
 
 // CARREGAR PUZZLE
-function loadPuzzle(){
+function loadPuzzle() {
     const p = puzzles[currentChapter][currentPuzzle];
-    puzzleBox.style.display="block";
+    puzzleBox.style.display = "block";
     puzzleBox.innerHTML = `<h2>Puzzle</h2><p>${p.q}</p>`;
-    p.options.forEach(opt=>{
-        const btn=document.createElement("button");
-        btn.innerText=opt;
-        btn.onclick=()=>checkPuzzle(opt,p);
+    p.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.onclick = () => checkPuzzle(opt, p);
         puzzleBox.appendChild(btn);
     });
-    nextBtn.style.display="none";
+    nextBtn.style.display = "none";
 }
 
 // CHECAR PUZZLE
-function checkPuzzle(choice,p){
+function checkPuzzle(choice, p) {
     const saved = JSON.parse(localStorage.getItem("sf_user"));
-    if(choice===p.ans){
+    if (choice === p.ans) {
         saved.inventory.push(p.reward);
         alert("Acertou! Item: " + p.reward);
         currentPuzzle++;
     } else {
         alert("Errado! Tente de novo mais tarde.");
     }
-    saved.progress = {chapter:currentChapter, part:currentPart, puzzle:currentPuzzle};
+    saved.progress = { chapter: currentChapter, part: currentPart, puzzle: currentPuzzle };
     localStorage.setItem("sf_user", JSON.stringify(saved));
     updateInventory();
     showStory();
 }
 
 // AVANÇAR HISTÓRIA
-function nextPart(){
+function nextPart() {
     const saved = JSON.parse(localStorage.getItem("sf_user"));
-    if(currentPuzzle < puzzles[currentChapter].length){ loadPuzzle(); return; }
-    if(currentPart < chapters[currentChapter].length-1){ currentPart++; currentPuzzle=0; }
-    else if(currentChapter < chapters.length-1){ currentChapter++; currentPart=0; currentPuzzle=0; alert("Capítulo desbloqueado!"); }
-    else{ storyBox.innerHTML="Fim do jogo."; nextBtn.style.display="none"; puzzleBox.style.display="none"; return; }
-    saved.progress = {chapter: currentChapter, part: currentPart, puzzle: currentPuzzle};
+    if (currentPuzzle < puzzles[currentChapter].length) { loadPuzzle(); return; }
+    if (currentPart < chapters[currentChapter].length - 1) { currentPart++; currentPuzzle = 0; }
+    else if (currentChapter < chapters.length - 1) { currentChapter++; currentPart = 0; currentPuzzle = 0; alert("Capítulo desbloqueado!"); }
+    else { storyBox.innerHTML = "Fim do jogo."; nextBtn.style.display = "none"; puzzleBox.style.display = "none"; return; }
+    saved.progress = { chapter: currentChapter, part: currentPart, puzzle: currentPuzzle };
     localStorage.setItem("sf_user", JSON.stringify(saved));
     showStory();
 }
 
 // CARREGAMENTO INICIAL
-window.onload=()=>{
-    const saved=localStorage.getItem("sf_user");
-    if(saved){ 
-        formSection.style.display="none"; 
-        contractSection.style.display="none"; 
-        gameSection.style.display="block"; 
-        startGame(); 
-    } else { formSection.style.display="block"; }
+window.onload = () => {
+    const saved = localStorage.getItem("sf_user");
+    if (saved) {
+        formSection.style.display = "none";
+        contractSection.style.display = "none";
+        gameSection.style.display = "block";
+        startGame();
+    } else { formSection.style.display = "block"; }
 }
