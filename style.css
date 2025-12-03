@@ -1,12 +1,77 @@
 body {
-    background-color: #B8C1A5;
+    margin: 0;
+    font-family: "Cinzel", serif;
+    background: #000;
+    color: #f2f2f2;
+    transition: 0.4s;
 }
 
-span {
-    color: #A85A3C;
+body.light {
+    background: #f2f2f2;
+    color: #111;
 }
 
-#mensagem {
-    color: #A85A3C;
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: crimson;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: bold;
+    z-index: 1000;
+}
+
+.container {
     width: 90%;
+    margin: auto;
+    padding-top: 100px;
+}
+
+h1,
+h2 {
+    color: red;
+    text-shadow: 0 0 10px darkred;
+}
+
+input,
+button {
+    padding: 10px;
+    font-size: 18px;
+    margin-top: 10px;
+    width: 100%;
+    border-radius: 6px;
+    border: none;
+}
+
+button {
+    background: crimson;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#story-box {
+    background: rgba(255, 0, 0, 0.07);
+    padding: 20px;
+    margin-top: 20px;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+#puzzle-box {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    margin-top: 20px;
+    display: none;
+}
+
+#inventory-box {
+    margin-top: 20px;
+    font-size: 16px;
+    padding: 10px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid red;
 }

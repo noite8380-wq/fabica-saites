@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>SombraFácil – RPG de Terror Psicológico</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="theme-toggle" onclick="toggleTheme()">Tema ☯️</div>
+<div class="container">
+
+<!-- FORMULÁRIO -->
+<section id="form-section">
+<h1>Antes de Entrar...</h1>
+<p>Preencha seus dados para desbloquear o jogo.</p>
+<input id="playerName" placeholder="Seu Nome">
+<input id="playerAge" type="number" placeholder="Sua Idade">
+<input id="playerCode" placeholder="Crie uma Senha">
+<button onclick="saveForm()">Continuar</button>
+</section>
+
+<!-- CONTRATO -->
+<section id="contract-section" style="display:none;">
+<h1>Contrato Psicológico</h1>
+<p>Este jogo contém terror psicológico intenso. Clique em aceitar para continuar.</p>
+<button onclick="acceptContract()">Aceito</button>
+</section>
+
+<!-- JOGO -->
+<section id="game-section" style="display:none;">
+<h1 id="chapter-title">SombraFácil</h1>
+<div id="inventory-box">Inventário: <span id="inv-list">vazio</span></div>
+<div id="story-box"></div>
+<div id="puzzle-box"></div>
+<button id="next-btn" onclick="nextPart()">Continuar</button>
+</section>
+
+</div>
+
+<script src="jogo.js"></script>
+</body>
+</html>
