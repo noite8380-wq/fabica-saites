@@ -15,7 +15,7 @@ function saveForm() {
     const age = parseInt(document.getElementById("playerAge").value);
     const code = document.getElementById("playerCode").value.trim();
     if (!name || !age || !code) { alert("Preencha todos os campos."); return; }
-    if (age < 16) { alert("Você precisa ter 16 anos ou mais."); return; }
+    if (age < 16) { alert("Você precisa ter 15 anos ou mais."); return; }
     localStorage.setItem("sf_user", JSON.stringify({
         name, age, code, progress: { chapter: 0, part: 0, puzzle: 0 }, inventory: [], state: { medo: 0, coragem: 50, sanidade: 100 }
     }));

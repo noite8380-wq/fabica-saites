@@ -1,0 +1,109 @@
+###############################################################
+# Workflow de Deploy & Garantia de Qualidade
+# -------------------------------------------------------------
+# Este workflow automatiza o processo de publicação do projeto
+# no GitHub Pages e pode ser expandido para incluir etapas de
+# validação de qualidade, como testes e linters.
+#
+# Principais funções:
+# - Publicar o site automaticamente após alterações na branch 'main'.
+# - Cancelar execuções concorrentes para evitar conflitos.
+# - Permitir disparo manual do workflow.
+# - Gerenciar permissões de acesso necessárias para o deploy.
+# - Definir ambiente e URL do site publicado.
+#
+# Para expandir este workflow, recomenda-se adicionar etapas de
+# validação de código, testes automatizados e notificações.
+###############################################################
+## Workflow de Deploy & Garantia de Qualidade
+# Este workflow realiza o deploy automático do projeto para o GitHub Pages
+# e executa etapas de garantia de qualidade sempre que há um push na branch 'main'.
+
+###############################################################
+# Nome do workflow exibido na interface do GitHub Actions.
+###############################################################
+name: 🚀 Deploy & Quality Assurance
+
+###############################################################
+# Eventos que disparam o workflow:
+# - push: Executa automaticamente ao enviar alterações para a branch 'main'.
+# - workflow_dispatch: Permite execução manual pelo GitHub Actions.
+###############################################################
+## Eventos que disparam o workflow
+# Executa quando há push na branch 'main' ou quando disparado manualmente.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+###############################################################
+# Permissões necessárias para o workflow:
+# - contents: read -> Permite leitura dos arquivos do repositório.
+# - pages: write -> Permite publicar no GitHub Pages.
+
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+###############################################################
+# Controle de concorrência:
+# - Garante que apenas uma execução do workflow por branch ocorra ao mesmo tempo.
+# - Cancela execuções anteriores se uma nova for iniciada.
+###############################################################
+## Controle de concorrência
+# Cancela execuções anteriores do mesmo workflow/ref se houver uma nova execução.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+###############################################################
+# Definição dos jobs do workflow:
+
+###############################################################
+## Job principal de deploy
+# Este job realiza o deploy do projeto para o GitHub Pages.
+  # 'runs-on: ubuntu-latest' define o sistema operacional usado pelo runner.
+  # 'if: github.ref == ...' garante que o deploy só ocorra na branch principal.
+  # 'outputs' permite compartilhar a URL gerada do site para outros jobs.
+  # O bloco 'environment' define o ambiente de publicação e a URL do site.
+  # O bloco 'steps' contém todas as etapas executadas pelo job de deploy.
+  # Cada etapa é descrita abaixo:
+
+
+jobs:
+  deploy:
+    name: 🚀 Deploy to Github pages
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+
+      # Define o ambiente de deploy e a URL da página publicada
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+        # Configura o ambiente do GitHub Pages
+      - name: 📄 Setup Pages
+        uses: actions/configure-pages@v4
+
+        # Faz upload dos arquivos do projeto como artefato para publicação
+      - name: 📦 Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+        # Realiza o deploy dos artefatos para o GitHub Pages
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
