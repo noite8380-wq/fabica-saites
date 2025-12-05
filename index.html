@@ -1,41 +1,88 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>SombraFácil – RPG de Terror Psicológico</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SombraFácil — Versão Final (Resident Inventory + Cap 4)</title>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<div class="theme-toggle" onclick="toggleTheme()">Tema ☯️</div>
-<div class="container">
+  <div class="blood-drip" id="blood"></div>
+  <div class="theme-toggle" id="themeToggle">Tema ☯️</div>
 
-<!-- FORMULÁRIO -->
-<section id="form-section">
-<h1>Antes de Entrar...</h1>
-<p>Preencha seus dados para desbloquear o jogo.</p>
-<input id="playerName" placeholder="Seu Nome">
-<input id="playerAge" type="number" placeholder="Sua Idade">
-<input id="playerCode" placeholder="Crie uma Senha">
-<button onclick="saveForm()">Continuar</button>
-</section>
+  <div class="hud" id="hud">
+    <div class="stat">🧠 Sanidade <span id="sanidade-val">100</span>
+      <div class="bar" id="san-bar"><i style="width:100%"></i></div>
+    </div>
+    <div class="stat">💀 Medo <span id="medo-val">0</span>
+      <div class="bar" id="med-bar"><i style="width:0%"></i></div>
+    </div>
+    <div class="stat">🔥 Coragem <span id="coragem-val">50</span>
+      <div class="bar" id="cor-bar"><i style="width:50%"></i></div>
+    </div>
+  </div>
 
-<!-- CONTRATO -->
-<section id="contract-section" style="display:none;">
-<h1>Contrato Psicológico</h1>
-<p>Este jogo contém terror psicológico intenso. Clique em aceitar para continuar.</p>
-<button onclick="acceptContract()">Aceito</button>
-</section>
+  <div class="app" id="app">
+    <!-- LEFT: controle / inventário estilo Resident Evil -->
+    <aside class="card left" id="left-card">
+      <h2>Perfil & Salvamentos</h2>
+      <input id="playerName" placeholder="Seu nome" type="text"/>
+      <input id="playerAge" placeholder="Sua idade" type="number" min="0"/>
+      <input id="playerCode" placeholder="Senha local" type="text"/>
+      <div class="controls">
+        <button id="btnCreate">Criar/Continuar</button>
+        <button id="btnClear" class="ghost">Apagar dados</button>
+      </div>
 
-<!-- JOGO -->
-<section id="game-section" style="display:none;">
-<h1 id="chapter-title">SombraFácil</h1>
-<div id="inventory-box">Inventário: <span id="inv-list">vazio</span></div>
-<div id="story-box"></div>
-<div id="puzzle-box"></div>
-<button id="next-btn" onclick="nextPart()">Continuar</button>
-</section>
+      <hr/>
 
-</div>
+      <label style="font-weight:700">Inventário</label>
+      <div id="inventory" class="inventory-grid" aria-live="polite"></div>
+      <div id="inv-desc" class="inv-desc">Passe o mouse em um item para ver descrição.</div>
+
+      <div class="controls" style="margin-top:8px">
+        <button id="useItem" class="ghost">Usar item</button>
+        <button id="combineItem" class="ghost">Combinar</button>
+      </div>
+
+      <hr/>
+
+      <label>Salvamentos</label>
+      <div id="slots"></div>
+      <div class="controls">
+        <button id="exportAll" class="ghost">Exportar</button>
+        <button id="importAll" class="ghost">Importar</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none"/>
+      </div>
+    </aside>
+
+    <!-- RIGHT: história / puzzle / logs -->
+    <main class="card right" id="right-card">
+      <h1 id="chapter-title">SombraFácil</h1>
+      <div id="story-box" class="story-box">Crie um perfil para começar.</div>
+      <div id="puzzle-box" class="puzzle-box" style="display:none"></div>
+
+      <div class="controls" style="margin-top:12px">
+        <button id="next-btn">Continuar</button>
+        <button id="quickSave" class="ghost">Salvar rápido</button>
+        <button id="quickLoad" class="ghost">Carregar rápido</button>
+      </div>
+
+      <h3 style="margin-top:12px">Logs</h3>
+      <div id="log" class="log">Pronto.</div>
+    </main>
+  </div>
+
+  <!-- Cutscene overlay -->
+  <div id="cutscene" class="cutscene-overlay" aria-hidden="true">
+    <div class="cutscene-card">
+      <div id="cutscene-text" class="cutscene-text"></div>
+      <div class="cutscene-controls">
+        <button id="cut-next" class="ghost">Avançar</button>
+        <button id="cut-skip" class="ghost">Pular</button>
+      </div>
+    </div>
+  </div>
 
 <script src="jogo.js"></script>
 </body>
