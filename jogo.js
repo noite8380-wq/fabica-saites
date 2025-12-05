@@ -635,3 +635,19 @@
   })();
 
 })();
+/* jogo.js — versão final integrada (salvamentos, inventário, capitulos, HUD, cutscenes) */
+(function(){
+  'use strict';
+    const $ = id => document.getElementById(id);
+      const now = ()=> new Date().toISOString();
+        const safeParse = (r,f=null)=>{ try{return JSON.parse(r);}catch(e){return f} };
+          const log = m => { $('log').textContent = `[${new Date().toLocaleTimeString()}] ${m}\n` + $('log').textContent; };
+
+            // elements
+              const playerName = $('playerName'), playerAge = $('playerAge'), playerCode = $('playerCode');
+                const btnCreate = $('btnCreate'), btnClear = $('btnClear');
+                  const inventoryGrid = $('inventory'), invDesc = $('inv-desc');
+                    const storyBox = $('story-box'), puzzleBox = $('puzzle-box');
+                      const nextBtn = $('next-btn'), quickSave = $('quickSave'), quickLoad = $('quickLoad');
+                        const sanVal = $('sanidade-val'), medoVal = $('medo-val'), corVal = $('coragem-val');
+                          const sanBar = $('san-bar').firstElementChild, medoBar = $('med-bar').firstElementChild, corBar = $('
