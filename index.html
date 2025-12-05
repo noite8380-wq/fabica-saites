@@ -1,100 +1,88 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SombraFácil — Versão Final (Resident Inventory + Cap 4)</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SombraFácil — FULL POWER (Resident + Cap 4)</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-    <div class="blood-drip" id="blood"></div>
-    <div class="theme-toggle" id="themeToggle">Tema ☯️</div>
+  <div class="blood-drip" id="blood"></div>
+  <div class="theme-toggle" id="themeToggle" title="Alternar tema">Tema ☯️</div>
 
-    <div class="hud" id="hud">
-        <div class="stat">
-            🧠 Sanidade <span id="sanidade-val">100</span>
-            <div class="bar" id="san-bar"><i style="width:100%"></i></div>
-        </div>
-
-        <div class="stat">
-            💀 Medo <span id="medo-val">0</span>
-            <div class="bar" id="med-bar"><i style="width:0%"></i></div>
-        </div>
-
-        <div class="stat">
-            🔥 Coragem <span id="coragem-val">50</span>
-            <div class="bar" id="cor-bar"><i style="width:50%"></i></div>
-        </div>
+  <div class="hud" id="hud" aria-live="polite">
+    <div class="stat">🧠 Sanidade <span id="sanidade-val">100</span>
+      <div class="bar" id="san-bar"><i style="width:100%"></i></div>
     </div>
-
-    <div class="app" id="app">
-        <!-- LEFT -->
-        <aside class="card left" id="left-card">
-            <h2>Perfil & Salvamentos</h2>
-
-            <input id="playerName" placeholder="Seu nome" type="text" />
-            <input id="playerAge" placeholder="Sua idade" type="number" min="0" />
-            <input id="playerCode" placeholder="Senha local" type="text" />
-
-            <div class="controls">
-                <button id="btnCreate">Criar/Continuar</button>
-                <button id="btnClear" class="ghost">Apagar dados</button>
-            </div>
-
-            <hr />
-
-            <label class="label-strong">Inventário</label>
-            <div id="inventory" class="inventory-grid" aria-live="polite"></div>
-            <div id="inv-desc" class="inv-desc">Passe o mouse em um item para ver descrição.</div>
-
-            <div class="controls" style="margin-top:8px">
-                <button id="useItem" class="ghost">Usar item</button>
-                <button id="combineItem" class="ghost">Combinar</button>
-            </div>
-
-            <hr />
-
-            <label>Salvamentos</label>
-            <div id="slots"></div>
-
-            <div class="controls">
-                <button id="exportAll" class="ghost">Exportar</button>
-                <button id="importAll" class="ghost">Importar</button>
-                <input id="importFile" type="file" accept="application/json" style="display:none" />
-            </div>
-        </aside>
-
-        <!-- RIGHT -->
-        <main class="card right" id="right-card">
-            <h1 id="chapter-title">SombraFácil</h1>
-
-            <div id="story-box" class="story-box">Crie um perfil para começar.</div>
-            <div id="puzzle-box" class="puzzle-box" style="display:none"></div>
-
-            <div class="controls" style="margin-top:12px">
-                <button id="next-btn">Continuar</button>
-                <button id="quickSave" class="ghost">Salvar rápido</button>
-                <button id="quickLoad" class="ghost">Carregar rápido</button>
-            </div>
-
-            <h3 style="margin-top:12px">Logs</h3>
-            <div id="log" class="log">Pronto.</div>
-        </main>
+    <div class="stat">💀 Medo <span id="medo-val">0</span>
+      <div class="bar" id="med-bar"><i style="width:0%"></i></div>
     </div>
-
-    <!-- CUTSCENE -->
-    <div id="cutscene" class="cutscene-overlay" aria-hidden="true">
-        <div class="cutscene-card">
-            <div id="cutscene-text" class="cutscene-text"></div>
-
-            <div class="cutscene-controls">
-                <button id="cut-next" class="ghost">Avançar</button>
-                <button id="cut-skip" class="ghost">Pular</button>
-            </div>
-        </div>
+    <div class="stat">🔥 Coragem <span id="coragem-val">50</span>
+      <div class="bar" id="cor-bar"><i style="width:50%"></i></div>
     </div>
+  </div>
 
-    <script src="jogo.js"></script>
+  <div class="app" id="app">
+    <aside class="card left" id="left-card" role="region" aria-label="Perfil e inventário">
+      <h2>Perfil & Salvamentos</h2>
+
+      <input id="playerName" placeholder="Seu nome" type="text" />
+      <input id="playerAge" placeholder="Sua idade" type="number" min="0" />
+      <input id="playerCode" placeholder="Senha local" type="text" />
+
+      <div class="controls">
+        <button id="btnCreate">Criar/Continuar</button>
+        <button id="btnClear" class="ghost">Apagar dados</button>
+      </div>
+
+      <hr />
+
+      <label class="label-strong">Inventário</label>
+      <div id="inventory" class="inventory-grid" aria-live="polite"></div>
+      <div id="inv-desc" class="inv-desc">Passe o mouse em um item para ver descrição.</div>
+
+      <div class="controls" style="margin-top:8px">
+        <button id="useItem" class="ghost">Usar item</button>
+        <button id="combineItem" class="ghost">Combinar</button>
+      </div>
+
+      <hr />
+
+      <label>Salvamentos</label>
+      <div id="slots"></div>
+      <div class="controls">
+        <button id="exportAll" class="ghost">Exportar</button>
+        <button id="importAll" class="ghost">Importar</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+      </div>
+    </aside>
+
+    <main class="card right" id="right-card" role="main">
+      <h1 id="chapter-title">SombraFácil</h1>
+      <div id="story-box" class="story-box">Crie um perfil para começar.</div>
+      <div id="puzzle-box" class="puzzle-box" style="display:none"></div>
+
+      <div class="controls" style="margin-top:12px">
+        <button id="next-btn">Continuar</button>
+        <button id="quickSave" class="ghost">Salvar rápido</button>
+        <button id="quickLoad" class="ghost">Carregar rápido</button>
+      </div>
+
+      <h3 style="margin-top:12px">Logs</h3>
+      <div id="log" class="log">Pronto.</div>
+    </main>
+  </div>
+
+  <div id="cutscene" class="cutscene-overlay" aria-hidden="true">
+    <div class="cutscene-card">
+      <div id="cutscene-text" class="cutscene-text"></div>
+      <div class="cutscene-controls" style="margin-top:12px; text-align:right">
+        <button id="cut-next" class="ghost">Avançar</button>
+        <button id="cut-skip" class="ghost">Pular</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="jogo.js"></script>
 </body>
 </html>
