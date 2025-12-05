@@ -1,76 +1,48 @@
-/* jogo.js — final: inventário Resident + Cap 4 mix + HUD + cutscenes */
+/* jogo.js — versão corrigida e estável para execução */
 (function () {
     'use strict';
+
+    /* helpers */
     const $ = id => document.getElementById(id);
     const now = () => new Date().toISOString();
-    const safeParse = (r, f = null) => { try { return JSON.parse(r); } catch (e) { return f } };
-    const log = m => { $('log').textContent = `[${new Date().toLocaleTimeString()}] ${m}\n` + $('log').textContent; };
+    const safeParse = (r, f = null) => { try { return JSON.parse(r); } catch (e) { return f; } };
+    const log = m => {
+        const el = $('log');
+        if (!el) { console.log(m); return; }
+        el.textContent = `[${new Date().toLocaleTimeString()}] ${m}\n` + el.textContent;
+    };
 
-    // ELEMENTOS
+    /* elementos */
     const playerName = $('playerName'), playerAge = $('playerAge'), playerCode = $('playerCode');
     const btnCreate = $('btnCreate'), btnClear = $('btnClear');
     const inventoryGrid = $('inventory'), invDesc = $('inv-desc');
     const storyBox = $('story-box'), puzzleBox = $('puzzle-box');
     const nextBtn = $('next-btn'), quickSave = $('quickSave'), quickLoad = $('quickLoad');
     const sanVal = $('sanidade-val'), medoVal = $('medo-val'), corVal = $('coragem-val');
-    const sanBar = $('san-bar').firstElementChild, medoBar = $('med-bar').firstElementChild, corBar = $('cor-bar').firstElementChild;
+    const sanBarHost = $('san-bar'), medoBarHost = $('med-bar'), corBarHost = $('cor-bar');
+    const sanBar = sanBarHost ? sanBarHost.firstElementChild : null;
+    const medoBar = medoBarHost ? medoBarHost.firstElementChild : null;
+    const corBar = corBarHost ? corBarHost.firstElementChild : null;
     const blood = $('blood'), hud = $('hud');
     const slotsContainer = $('slots'), exportAll = $('exportAll'), importAll = $('importAll'), importFile = $('importFile');
     const cutsceneOverlay = $('cutscene'), cutsceneText = $('cutscene-text'), cutNext = $('cut-next'), cutSkip = $('cut-skip');
     const themeToggle = $('themeToggle');
 
-    // DATA (capítulos + charadas)
+    /* dados */
     const chapters = [
-        [
-            "O corredor parecia respirar junto com Rafael. As luzes tremiam num compasso que não combinava com o pulso humano.",
-            "O telefone tocou atrás dele — o fio solto brilhava como um olho aberto.",
-            "As portas do 5º repetiam-se; cada uma contava uma pequena diferença, um erro de memória.",
-            "Fim do Capítulo 1."
-        ],
-        [
-            "A sombra no piso deixou de ser reflexo e passou a ser intenção, curva e fria como aço.",
-            "As paredes sussurravam nomes que não pertenciam a ele.",
-            "Um painel acendeu: SUJEITO R-FL17 — FASE 2 ATIVADA. O sistema o chamava pelo nome.",
-            "Fim do Capítulo 2."
-        ],
-        [
-            "A sala circular parecia construída fora do tempo; as palavras na parede se moviam para evitar leitura direta.",
-            "O candelabro caiu e as chamas desenharam formas que lembravam lembranças que ele não tinha.",
-            "A ponte no vazio parecia feita de decisões passadas; cada passo era uma escolha de memória.",
-            "Fim do Capítulo 3."
-        ],
-        [
-            "O salão final abre como um pulmão negro. No centro, algo observa sem olhos e fala sem boca.",
-            "A Sentinela do Abismo testa o 'eu' com perguntas que dobram a memória e o medo.",
-            "As escolhas e seu inventário determinarão se Rafael sai inteiro... ou se a Sentinela o consome.",
-            "Fim do Capítulo 4."
-        ]
+        ["O corredor parecia respirar junto com Rafael. As luzes tremiam num compasso que não combinava com o pulso humano.","O telefone tocou atrás dele.","Fim do Capítulo 1."],
+        ["A sombra no piso deixou de ser reflexo e passou a ser intenção.","As paredes sussurravam nomes.","Fim do Capítulo 2."],
+        ["A sala circular parecia construída fora do tempo.","O candelabro caiu e as chamas desenharam formas.","Fim do Capítulo 3."],
+        ["O salão final abre como um pulmão negro.","A Sentinela do Abismo testa o 'eu'.","As escolhas e o inventário decidirão o final.","Fim do Capítulo 4."]
     ];
 
     const puzzles = [
-        [{ q: "No corredor, três sons: passos, respiração e batida metálica. Qual NÃO pertence?", options: ["Passos", "Respiração", "Batida Metálica"], ans: "Batida Metálica", reward: "Chave do Andar Fantasma" }],
-        [{ q: "A sombra imita:", options: ["O passado dele", "O medo dele", "O futuro dele"], ans: "O medo dele", reward: "Símbolo da Revelação" }],
-        [{ q: "Qual símbolo revela a ponte como memória?", options: ["Sangue", "Sombra", "Vento"], ans: "Sombra", reward: "Fragmento da Memória Perdida" }],
-        [{ q: "Guardião: 'Sou aquilo que você evita; quando me encara, eu me desfaz. O que sou?'", options: ["Medo", "Silêncio", "Mentira"], ans: "Medo", reward: "Coração da Verdade" }]
+        [{ q: "No corredor, três sons: passos, respiração e batida metálica. Qual NÃO pertence?", options: ["Passos","Respiração","Batida Metálica"], ans: "Batida Metálica", reward: "Chave do Andar Fantasma" }],
+        [{ q: "A sombra imita:", options: ["O passado dele","O medo dele","O futuro dele"], ans: "O medo dele", reward: "Símbolo da Revelação" }],
+        [{ q: "Qual símbolo revela a ponte como memória?", options: ["Sangue","Sombra","Vento"], ans: "Sombra", reward: "Fragmento da Memória Perdida" }],
+        [{ q: "Guardião: 'Sou aquilo que você evita; quando me encara, eu me desfaz. O que sou?'", options: ["Medo","Silêncio","Mentira"], ans: "Medo", reward: "Coração da Verdade" }]
     ];
 
-    // SAVE KEYS
-    const SAVE_KEY = 'sf_final_v1';
-    const SLOTS_KEY = 'sf_slots_final_v1';
-
-    // default save
-    function createSave(name, age, code) {
-        return {
-            meta: { name: name || 'Player', age: age || 0, createdAt: now() },
-            cred: { code: code || null },
-            progress: { chapter: 0, part: 0 },
-            inventory: [], // objects: {id,name,desc,qty,usable}
-            solved: puzzles.map(ch => ch.map(() => false)),
-            state: { sanidade: 100, medo: 0, coragem: 50 }
-        };
-    }
-
-    // INVENTORY HELPERS (items relevantes)
     const ITEM_LIBRARY = {
         'chave_andar': { id: 'chave_andar', name: 'Chave do Andar Fantasma', desc: 'Abre uma porta no 5º andar. Útil para evitar loops.', usable: true },
         'simbolo_rev': { id: 'simbolo_rev', name: 'Símbolo da Revelação', desc: 'Revela inscrições ocultas quando usado; reduz medo levemente.', usable: true },
@@ -80,19 +52,35 @@
         'poção': { id: 'poção', name: 'Poção (sanidade)', desc: 'Restaura 20% de sanidade ao usar.', usable: true }
     };
 
-    // STORAGE HELPERS
+    /* chaves de storage */
+    const SAVE_KEY = 'sf_final_v2';
+    const SLOTS_KEY = 'sf_slots_final_v2';
+    const CHECKPOINTS_KEY = 'sf_checkpoints_v2';
+
+    /* saves */
+    function createSave(name, age, code) {
+        return {
+            meta: { name: name || 'Player', age: age || 0, createdAt: now(), unlocked_floor: false },
+            cred: { code: code || null },
+            progress: { chapter: 0, part: 0 },
+            inventory: [],
+            solved: puzzles.map(ch => ch.map(() => false)),
+            state: { sanidade: 100, medo: 0, coragem: 50 },
+            flags: {}
+        };
+    }
+
     function loadLocal() { return safeParse(localStorage.getItem(SAVE_KEY), null); }
     function persist(save) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { log('Erro salvar: ' + e.message); } }
     function loadSlots() { return safeParse(localStorage.getItem(SLOTS_KEY), [null, null, null, null, null]); }
     function saveSlots(a) { try { localStorage.setItem(SLOTS_KEY, JSON.stringify(a)); } catch (e) { log('Erro slots: ' + e.message); } }
 
-    // UI: inventory render (Resident style)
+    /* inventário UI */
     function renderInventory(save) {
+        if (!inventoryGrid) return;
         inventoryGrid.innerHTML = '';
         const inv = (save && Array.isArray(save.inventory)) ? save.inventory : [];
-        // ensure 12 slots (3x4)
-        const slots = 12;
-        for (let i = 0; i < slots; i++) {
+        for (let i = 0; i < 12; i++) {
             const cell = document.createElement('div'); cell.className = 'inv-slot';
             if (inv[i]) {
                 const it = inv[i];
@@ -107,166 +95,76 @@
             inventoryGrid.appendChild(cell);
         }
     }
-    function showItemDesc(it) { invDesc.textContent = it.desc || 'Sem descrição.'; }
-    function hideItemDesc() { invDesc.textContent = 'Passe o mouse em um item para ver descrição.'; }
+    function showItemDesc(it) { if (invDesc) invDesc.textContent = it.desc || 'Sem descrição.'; }
+    function hideItemDesc() { if (invDesc) invDesc.textContent = 'Passe o mouse em um item para ver descrição.'; }
 
-    // SELECT / USE / COMBINE
     let selectedSlot = null;
     function selectSlot(i) {
         const save = loadLocal(); if (!save) return;
         const it = save.inventory[i];
-        if (!it) { selectedSlot = null; invDesc.textContent = 'Slot vazio.'; return; }
+        if (!it) { selectedSlot = null; if (invDesc) invDesc.textContent = 'Slot vazio.'; return; }
         selectedSlot = i;
-        invDesc.textContent = it.desc + (it.qty ? ` (x${it.qty})` : '');
-    }
-    $('useItem').addEventListener ? $('useItem').addEventListener('click', useSelected) : null;
-    $('combineItem').addEventListener ? $('combineItem').addEventListener('click', combineSelected) : null;
-
-    function useSelected() {
-        const save = loadLocal(); if (!save) return alert('Sem perfil.');
-        if (selectedSlot === null) { return alert('Selecione um item para usar.'); }
-        const it = save.inventory[selectedSlot];
-        if (!it || !it.usable) return alert('Item não utilizável.');
-        // implement usage effects by id
-        switch (it.id) {
-            case 'poção':
-                save.state.sanidade = Math.min(100, save.state.sanidade + 20);
-                it.qty = (it.qty || 1) - 1;
-                if (it.qty <= 0) save.inventory[selectedSlot] = null;
-                alert('Poção usada — sanidade +20');
-                break;
-            case 'simbolo_rev':
-                // reveals hidden text in story (implementation: reduce medo)
-                save.state.medo = Math.max(0, save.state.medo - 10);
-                alert('Símbolo usado — medo reduzido.');
-                break;
-            case 'vela':
-                // consumir vela and reveal small hint: restore small sanidade
-                save.state.sanidade = Math.min(100, save.state.sanidade + 6);
-                it.qty = (it.qty || 1) - 1; if (it.qty <= 0) save.inventory[selectedSlot] = null;
-                alert('Vela acesa — pequena restauração de sanidade.');
-                break;
-            case 'fragmento_mem':
-                // big sanidade restore
-                save.state.sanidade = Math.min(100, save.state.sanidade + 30);
-                alert('Fragmento integrado — lembrança restaurada.');
-                save.inventory[selectedSlot] = null;
-                break;
-            case 'chave_andar':
-                alert('Chave usada em uma porta especial — algo mudou no corredor.');
-                // set a flag to unlock special branch
-                save.meta.unlocked_floor = true;
-                save.inventory[selectedSlot] = null;
-                break;
-            case 'coracao_verdade':
-                alert('Coração empregado — prepara-se para o confronto final.');
-                // leave item (final usage handled at boss)
-                break;
-            default:
-                alert('Item usado, mas nada aconteceu.');
-        }
-        persist(save); renderInventory(save); updateHUD(save.state);
+        if (invDesc) invDesc.textContent = it.desc + (it.qty ? ` (x${it.qty})` : '');
     }
 
-    function combineSelected() {
-        const save = loadLocal(); if (!save) return alert('Sem perfil.');
-        if (selectedSlot === null) return alert('Selecione um item para combinar (slot A).');
-        const a = save.inventory[selectedSlot];
-        const targetIndex = prompt('Digite o número do slot para combinar (0 a 11):');
-        const bIndex = parseInt(targetIndex, 10);
-        if (isNaN(bIndex) || bIndex < 0 || bIndex > 11) return alert('Slot inválido.');
-        const b = save.inventory[bIndex];
-        if (!b) return alert('Slot alvo vazio.');
-        // example: combining vela + fragmento => poção
-        if ((a.id === 'vela' && b.id === 'fragmento_mem') || (b.id === 'vela' && a.id === 'fragmento_mem')) {
-            // remove both, add potion
-            save.inventory[selectedSlot] = null; save.inventory[bIndex] = null;
-            addItemToInventory(save, ITEM_LIBRARY['poção'], 1);
-            alert('Você combinou itens e criou uma Poção de Sanidade.');
-            persist(save); renderInventory(save); updateHUD(save.state);
-            return;
-        }
-        alert('Combinação não funciona. Nada aconteceu.');
-    }
-
-    function addItemToInventory(save, itemTemplate, qty = 1) {
-        // place item in first empty slot or stack if same id exists
+    function addItemToInventory(save, itemTemplate, qty) {
+        qty = typeof qty === 'number' ? qty : 1;
+        if (!save.inventory) save.inventory = [];
         for (let i = 0; i < save.inventory.length; i++) {
             if (save.inventory[i] && save.inventory[i].id === itemTemplate.id) {
-                save.inventory[i].qty = (save.inventory[i].qty || 1) + qty;
-                return true;
+                save.inventory[i].qty = (save.inventory[i].qty || 1) + qty; persist(save); return true;
             }
         }
-        // try to fill empty
         for (let i = 0; i < 12; i++) {
-            if (!save.inventory[i]) { save.inventory[i] = { ...itemTemplate, qty: qty }; return true; }
+            if (!save.inventory[i]) { save.inventory[i] = { ...itemTemplate, qty: qty }; persist(save); return true; }
         }
-        // if full, push and lose (simple)
+        if (save.inventory.length < 20) { save.inventory.push({ ...itemTemplate, qty: qty }); persist(save); return true; }
+        log('Inventário cheio. Item descartado.');
         return false;
     }
 
-    // SAVE & SLOTS UI
-    function renderSlots() {
-        const arr = loadSlots();
-        slotsContainer.innerHTML = '';
-        arr.forEach((s, i) => {
-            const el = document.createElement('div'); el.style.display = 'flex'; el.style.justifyContent = 'space-between'; el.style.alignItems = 'center'; el.style.gap = '6px'; el.style.marginTop = '6px';
-            el.innerHTML = `<div>${s ? `<strong>Slot ${i + 1}</strong> <small style="color:var(--muted)">${s.meta.name}</small>` : `<strong>Slot ${i + 1}</strong> <small style="color:var(--muted)">vazio</small>`}</div>`;
-            const actions = document.createElement('div');
-            const btnS = document.createElement('button'); btnS.className = 'ghost'; btnS.textContent = s ? 'Sobrescrever' : 'Salvar aqui'; btnS.onclick = () => saveToSlot(i);
-            const btnL = document.createElement('button'); btnL.className = 'ghost'; btnL.textContent = 'Carregar'; btnL.onclick = () => loadFromSlot(i);
-            const btnD = document.createElement('button'); btnD.className = 'ghost'; btnD.textContent = 'Excluir'; btnD.onclick = () => { if (confirm('Excluir?')) { const a = loadSlots(); a[i] = null; saveSlots(a); renderSlots(); } };
-            actions.appendChild(btnS); actions.appendChild(btnL); actions.appendChild(btnD);
-            el.appendChild(actions); slotsContainer.appendChild(el);
-        });
-    }
-    function saveToSlot(i) {
-        const cur = loadLocal(); if (!cur) return alert('Crie perfil antes de salvar.');
-        const arr = loadSlots(); arr[i] = cur; saveSlots(arr); renderSlots(); alert('Salvo no slot ' + (i + 1));
-    }
-    function loadFromSlot(i) {
-        const arr = loadSlots(); if (!arr[i]) return alert('Slot vazio.');
-        localStorage.setItem(SAVE_KEY, JSON.stringify(arr[i])); applySave(arr[i]); renderInventory(arr[i]); renderSlots(); alert('Carregado slot ' + (i + 1));
-    }
-
-    // HUD & blood speed mapping
+    /* HUD e estado */
     function updateHUD(state) {
         if (!state) return;
-        sanVal.textContent = state.sanidade; medoVal.textContent = state.medo; corVal.textContent = state.coragem;
-        sanBar.style.width = state.sanidade + '%'; medoBar.style.width = state.medo + '%'; corBar.style.width = state.coragem + '%';
-        // blood speed: if medo > 60 make drip faster
-        if (state.medo > 70) blood.classList.add('fast'); else blood.classList.remove('fast');
+        if (sanVal) sanVal.textContent = state.sanidade;
+        if (medoVal) medoVal.textContent = state.medo;
+        if (corVal) corVal.textContent = state.coragem;
+        if (sanBar) sanBar.style.width = state.sanidade + '%';
+        if (medoBar) medoBar.style.width = state.medo + '%';
+        if (corBar) corBar.style.width = state.coragem + '%';
+        if (blood) {
+            if (state.medo > 70) blood.classList.add('fast'); else blood.classList.remove('fast');
+        }
     }
 
-    // change state with effects
-    function changeState(delta) {
+    function changeState(delta, opts) {
+        opts = opts || {};
         const save = loadLocal(); if (!save) return;
         const prev = { ...save.state };
         save.state.sanidade = Math.max(0, Math.min(100, Math.round((save.state.sanidade || 0) + (delta.san || 0))));
         save.state.medo = Math.max(0, Math.min(100, Math.round((save.state.medo || 0) + (delta.medo || 0))));
         save.state.coragem = Math.max(0, Math.min(100, Math.round((save.state.coragem || 0) + (delta.cor || 0))));
         persist(save);
-        // shake when medo increased
         if (save.state.medo > (prev.medo || 0)) { document.body.classList.add('shake-effect'); setTimeout(() => document.body.classList.remove('shake-effect'), 360); }
-        // hud flash when sanidade dropped
-        if (save.state.sanidade < (prev.sanidade || 0)) { hud.classList.add('flash'); setTimeout(() => hud.classList.remove('flash'), 900); }
+        if (save.state.sanidade < (prev.sanidade || 0) && hud) { hud.classList.add('flash'); setTimeout(() => hud.classList.remove('flash'), 900); }
         updateHUD(save.state);
+        if (!opts.silent) createCheckpoint('state-change');
+        if (save.state.sanidade <= 0) autoRestoreOnDefeat();
     }
 
-    // story rendering
+    /* story / puzzles */
     function showStory(save) {
-        const c = save.progress.chapter; const p = save.progress.part;
-        $('chapter-title').textContent = `Capítulo ${c + 1} • Parte ${p + 1}`;
-        storyBox.textContent = (chapters[c] && chapters[c][p]) ? chapters[c][p] : '...';
-        puzzleBox.style.display = 'none';
-        nextBtn.style.display = 'inline-block';
-        // small auto-state drift (sanidade decays slightly per part)
-        changeState({ san: -1 });
+        if (!save) return;
+        const c = save.progress.chapter, p = save.progress.part;
+        const titleEl = $('chapter-title'); if (titleEl) titleEl.textContent = `Capítulo ${c + 1} • Parte ${p + 1}`;
+        if (storyBox) storyBox.textContent = (chapters[c] && chapters[c][p]) ? chapters[c][p] : '...';
+        if (puzzleBox) puzzleBox.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'inline-block';
+        changeState({ san: -1 }, { silent: true });
     }
 
-    // puzzle (1 per chapter)
-    function openPuzzle(ch, part) {
-        const p = puzzles[ch] && puzzles[ch][0]; if (!p) return;
+    function openPuzzle(ch) {
+        const p = puzzles[ch] && puzzles[ch][0]; if (!p || !puzzleBox) return;
         puzzleBox.innerHTML = '';
         const q = document.createElement('p'); q.textContent = p.q; puzzleBox.appendChild(q);
         const opts = document.createElement('div'); opts.style.display = 'grid'; opts.style.gap = '8px';
@@ -275,14 +173,16 @@
             b.onclick = () => checkPuzzle(opt, ch, 0, p);
             opts.appendChild(b);
         });
-        puzzleBox.appendChild(opts); puzzleBox.style.display = 'block'; nextBtn.style.display = 'none';
+        puzzleBox.appendChild(opts); puzzleBox.style.display = 'block';
+        if (nextBtn) nextBtn.style.display = 'none';
     }
 
     function checkPuzzle(choice, ch, idx, p) {
         const save = loadLocal(); if (!save) return;
         if (choice === p.ans) {
             if (!save.solved[ch][idx]) {
-                addItemToInventory(save, ITEM_LIBRARY[p.reward ? p.reward.toLowerCase().replace(/\s+/g, '_') : Object.keys(ITEM_LIBRARY)[0]] || ITEM_LIBRARY['chave_andar'], 1);
+                const rewardItem = getItemByRewardName(p.reward);
+                addItemToInventory(save, rewardItem, 1);
                 save.solved[ch][idx] = true;
                 log('Charada resolvida — ' + (p.reward || 'Recompensa'));
                 alert('Correto! Você recebeu: ' + (p.reward || 'Item'));
@@ -291,87 +191,309 @@
                 alert('Charada já resolvida.');
             }
         } else {
-            // wrong -> increase medo, reduce sanidade, trigger screen shake
             changeState({ medo: +14, san: -10 });
             alert('Errado. O medo sobe e algo treme ao seu redor.');
         }
-        persist(save); renderInventory(save); puzzleBox.style.display = 'none'; nextBtn.style.display = 'inline-block';
+        persist(save); renderInventory(save);
+        if (puzzleBox) puzzleBox.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'inline-block';
         applySave(save);
     }
 
-    // addItem helper (uses ITEM_LIBRARY by key)
-    function addItemToInventory(save, itemTemplate, qty = 1) {
-        if (!save.inventory) save.inventory = [];
-        // stack if same id
-        for (let i = 0; i < save.inventory.length; i++) {
-            if (save.inventory[i] && save.inventory[i].id === itemTemplate.id) {
-                save.inventory[i].qty = (save.inventory[i].qty || 1) + qty; persist(save); return true;
-            }
-        }
-        // fill first empty slot up to 12
-        for (let i = 0; i < 12; i++) {
-            if (!save.inventory[i]) { save.inventory[i] = { ...itemTemplate, qty: qty }; persist(save); return true; }
-        }
-        // if no space, try push and lose
-        if (save.inventory.length < 20) { save.inventory.push({ ...itemTemplate, qty: qty }); persist(save); return true; }
-        alert('Inventário cheio. Item descartado.');
-        return false;
-    }
-
-    // NEXT flow
-    nextBtn.addEventListener('click', () => {
-        const save = loadLocal(); if (!save) return alert('Crie um perfil.');
-        const ch = save.progress.chapter; const pt = save.progress.part;
-        const unsolved = puzzles[ch] && !save.solved[ch][0];
-        if (unsolved) { openPuzzle(ch, pt); return; }
-        // advance
-        if (pt < chapters[ch].length - 1) {
-            save.progress.part++; persist(save); applySave(save);
-            showStory(save);
-            log(`Avançou para parte ${save.progress.part + 1} do cap ${save.progress.chapter + 1}`);
-        } else {
-            // end of chapter
-            if (ch < chapters.length - 1) {
-                // play cutscene between chapters
-                playCutscene([`Você deixou o Capítulo ${ch + 1}. Um presságio ecoa...`, `Próximo: Capítulo ${ch + 2}`], () => {
-                    save.progress.chapter++; save.progress.part = 0; persist(save); applySave(save);
-                    showStory(save); alert('Capítulo desbloqueado.');
-                });
-            } else {
-                // final end
-                playCutscene(['Silêncio. Você deixou algo para trás — e algo ficou com você.'], () => { storyBox.textContent = 'Fim do jogo.'; nextBtn.style.display = 'none'; });
-            }
-        }
-    });
-
-    // CUTSCENE
+    /* cutscene (estável) */
     function playCutscene(lines, cb) {
         if (!Array.isArray(lines) || lines.length === 0) { if (cb) cb(); return; }
-        cutsceneOverlay.classList.add('show'); cutsceneText.textContent = lines[0];
+        if (!cutsceneOverlay || !cutsceneText || !cutNext || !cutSkip) { if (cb) cb(); return; }
+        cutsceneOverlay.classList.add('show');
+        cutsceneText.textContent = lines[0];
         let i = 0;
-        const advance = () => { i++; if (i >= lines.length) { cutsceneOverlay.classList.remove('show'); cutNext.removeEventListener('click', advance); cutSkip.removeEventListener('click', skip); if (cb) cb(); return; } cutsceneText.textContent = lines[i]; };
-        const skip = () => { cutsceneOverlay.classList.remove('show'); cutNext.removeEventListener('click', advance); cutSkip.removeEventListener('click', skip); if (cb) cb(); };
-        cutNext.addEventListener('click', advance); cutSkip.addEventListener('click', skip);
+        function advance() {
+            i++;
+            if (i >= lines.length) { cleanup(); if (cb) cb(); return; }
+            cutsceneText.textContent = lines[i];
+        }
+        function skip() {
+            cleanup();
+            if (cb) cb();
+        }
+        function cleanup() {
+            cutsceneOverlay.classList.remove('show');
+            try { cutNext.removeEventListener('click', advance); } catch (e) {}
+            try { cutSkip.removeEventListener('click', skip); } catch (e) {}
+        }
+        cutNext.addEventListener('click', advance);
+        cutSkip.addEventListener('click', skip);
     }
 
-    // apply save to UI
-    function applySave(save) {
-        if (!save) return;
-        renderInventory(save); updateHUD(save.state); showStory(save);
+    /* render slots UI */
+    function renderSlotsUI() {
+        const arr = loadSlots();
+        if (!Array.isArray(arr)) { saveSlots([null, null, null, null, null]); }
+        const current = loadSlots();
+        if (!slotsContainer) return;
+        slotsContainer.innerHTML = '';
+        current.forEach((s, i) => {
+            const el = document.createElement('div');
+            el.style.display = 'flex'; el.style.justifyContent = 'space-between'; el.style.alignItems = 'center'; el.style.gap = '6px'; el.style.marginTop = '6px';
+            el.innerHTML = `<div>${s ? `<strong>Slot ${i + 1}</strong> <small style="color:var(--muted)">${s.meta.name}</small>` : `<strong>Slot ${i + 1}</strong> <small style="color:var(--muted)">vazio</small>`}</div>`;
+            const actions = document.createElement('div');
+            const btnS = document.createElement('button'); btnS.className = 'ghost'; btnS.textContent = s ? 'Sobrescrever' : 'Salvar aqui'; btnS.onclick = () => saveToSlot(i);
+            const btnL = document.createElement('button'); btnL.className = 'ghost'; btnL.textContent = 'Carregar'; btnL.onclick = () => loadFromSlot(i);
+            const btnD = document.createElement('button'); btnD.className = 'ghost'; btnD.textContent = 'Excluir'; btnD.onclick = () => { if (confirm('Excluir?')) { const a = loadSlots(); a[i] = null; saveSlots(a); renderSlotsUI(); } };
+            actions.appendChild(btnS); actions.appendChild(btnL); actions.appendChild(btnD);
+            el.appendChild(actions); slotsContainer.appendChild(el);
+        });
+    }
+    function saveToSlot(i) { const s = loadLocal(); if (!s) return alert('Sem perfil.'); const a = loadSlots(); a[i] = s; saveSlots(a); renderSlotsUI(); alert('Salvo slot ' + (i + 1)); }
+    function loadFromSlot(i) { const a = loadSlots(); if (!a[i]) return alert('Slot vazio.'); localStorage.setItem(SAVE_KEY, JSON.stringify(a[i])); applySave(a[i]); renderInventory(a[i]); renderSlotsUI(); alert('Carregado slot ' + (i + 1)); }
+
+    /* checkpoints invisíveis */
+    const MAX_CHECKPOINTS = 6;
+    function loadCheckpoints() { return safeParse(localStorage.getItem(CHECKPOINTS_KEY), []); }
+    function saveCheckpoints(arr) { try { localStorage.setItem(CHECKPOINTS_KEY, JSON.stringify(arr.slice(-MAX_CHECKPOINTS))); } catch (e) { log('Erro checkpoints: ' + e.message); } }
+
+    function createCheckpoint(tag) {
+        const cur = loadLocal();
+        if (!cur) return;
+        const cp = { tag: tag || 'auto', timestamp: now(), save: cur };
+        const arr = loadCheckpoints();
+        arr.push(cp);
+        if (arr.length > MAX_CHECKPOINTS) arr.shift();
+        saveCheckpoints(arr);
+        console.debug('Checkpoint criado:', cp.tag, cp.timestamp);
     }
 
-    // quick save/load (slot0)
-    quickSave.addEventListener('click', () => {
+    function listCheckpoints() { return loadCheckpoints(); }
+    function restoreCheckpointByIndex(idx) {
+        const arr = loadCheckpoints(); if (!arr || !arr[idx]) return false;
+        localStorage.setItem(SAVE_KEY, JSON.stringify(arr[idx].save));
+        applySave(arr[idx].save);
+        log(`Checkpoint restaurado (${arr[idx].tag})`);
+        return true;
+    }
+
+    function autoRestoreOnDefeat() {
+        const arr = loadCheckpoints();
+        if (!arr || arr.length === 0) {
+            log('Nenhum checkpoint disponível — reinício requerido.');
+            localStorage.removeItem(SAVE_KEY);
+            if (storyBox) storyBox.textContent = 'Você perdeu. Crie um novo perfil.';
+            return;
+        }
+        const last = arr[arr.length - 1];
+        localStorage.setItem(SAVE_KEY, JSON.stringify(last.save));
+        applySave(last.save);
+        log('Restauração automática do último checkpoint: ' + last.tag);
+        changeState({ medo: +8, san: -6 }, { silent: true });
+    }
+
+    /* eventos psicológicos */
+    const PSY_EVENTS = [
+        { id: 'sussurro', label: 'Sussurro na parede', effect: () => changeState({ medo: +5, san: -3 }) },
+        { id: 'eco', label: 'Eco de passos vazios', effect: () => changeState({ medo: +8 }) },
+        { id: 'sonho', label: 'Vislumbre de lembrança', effect: () => changeState({ san: +6, medo: -4 }) },
+        { id: 'queda', label: 'Queda de luz', effect: () => changeState({ san: -6, medo: +6 }) }
+    ];
+    let psyInterval = null;
+    function startPsychEvents() {
+        if (psyInterval) clearInterval(psyInterval);
+        psyInterval = setInterval(() => {
+            const save = loadLocal(); if (!save) return;
+            const medo = save.state.medo || 0;
+            const chance = 0.25 + (medo / 400);
+            if (Math.random() > chance) return;
+            const ev = PSY_EVENTS[Math.floor(Math.random() * PSY_EVENTS.length)];
+            log(`Evento psicológico: ${ev.label}`);
+            ev.effect();
+            createCheckpoint('psy:' + ev.id);
+        }, Math.floor(18000 + Math.random() * 18000));
+    }
+    function stopPsychEvents() { if (psyInterval) clearInterval(psyInterval); psyInterval = null; }
+
+    /* boss final (simplificado e estável) */
+    function makeBossForSave(save) {
+        const medo = save.state.medo || 0, cor = save.state.coragem || 0, san = save.state.sanidade || 0;
+        const baseHP = 120 + Math.round(medo * 1.2) - Math.round(cor * 0.6);
+        const atk = 8 + Math.round(medo / 8);
+        const defense = 4 + Math.round((100 - san) / 15);
+        return { id: 'sentinela_abismo', name: 'Sentinela do Abismo', hp: Math.max(60, baseHP), maxHp: Math.max(60, baseHP), atk, defense, phase: 1 };
+    }
+
+    function initiateBossBattle() {
         const save = loadLocal(); if (!save) return alert('Sem perfil.');
-        const arr = loadSlots(); arr[0] = save; saveSlots(arr); renderSlots(); alert('Quick saved.');
+        if (!(save.progress.chapter === chapters.length - 1 && save.progress.part >= chapters[save.progress.chapter].length - 1)) {
+            save.progress.chapter = chapters.length - 1;
+            save.progress.part = chapters[save.progress.chapter].length - 1;
+            persist(save); applySave(save);
+        }
+        playCutscene(['O salão se abre. Algo sem olhos o encara...', 'A Sentinela do Abismo desperta. Prepare-se.'], () => {
+            const boss = makeBossForSave(save);
+            createBattleUI(boss, save);
+            createCheckpoint('boss-start');
+        });
+    }
+
+    function createBattleUI(boss, save) {
+        if (!puzzleBox || !storyBox) return;
+        puzzleBox.style.display = 'block';
+        puzzleBox.innerHTML = '';
+        const title = document.createElement('h3');
+        title.textContent = `${boss.name} — HP: ${boss.hp}/${boss.maxHp}`;
+        puzzleBox.appendChild(title);
+
+        const bossHpBar = document.createElement('div'); bossHpBar.style.height = '12px'; bossHpBar.style.background = 'rgba(255,255,255,0.06)'; bossHpBar.style.borderRadius = '6px'; bossHpBar.style.marginBottom = '8px';
+        const bossInner = document.createElement('div'); bossInner.style.height = '100%'; bossInner.style.width = ((boss.hp / boss.maxHp) * 100) + '%'; bossInner.style.borderRadius = '6px';
+        bossHpBar.appendChild(bossInner); puzzleBox.appendChild(bossHpBar);
+
+        const info = document.createElement('div'); info.innerHTML = `<p>Sanidade: ${save.state.sanidade} • Medo: ${save.state.medo} • Coragem: ${save.state.coragem}</p>`;
+        puzzleBox.appendChild(info);
+
+        const actions = document.createElement('div'); actions.style.display = 'flex'; actions.style.gap = '8px'; actions.style.flexWrap = 'wrap';
+        const btnAttack = document.createElement('button'); btnAttack.className = 'ghost'; btnAttack.textContent = 'Atacar';
+        const btnDefend = document.createElement('button'); btnDefend.className = 'ghost'; btnDefend.textContent = 'Defender';
+        const btnUseItem = document.createElement('button'); btnUseItem.className = 'ghost'; btnUseItem.textContent = 'Usar item';
+        const btnFlee = document.createElement('button'); btnFlee.className = 'ghost'; btnFlee.textContent = 'Tentar recuar';
+        actions.appendChild(btnAttack); actions.appendChild(btnDefend); actions.appendChild(btnUseItem); actions.appendChild(btnFlee);
+        puzzleBox.appendChild(actions);
+
+        const battleLog = document.createElement('div'); battleLog.style.marginTop = '10px'; battleLog.style.maxHeight = '180px'; battleLog.style.overflow = 'auto'; battleLog.style.fontSize = '0.9em';
+        puzzleBox.appendChild(battleLog);
+        function appendBattleLog(t) { battleLog.innerHTML = `<div>• ${t}</div>` + battleLog.innerHTML; }
+
+        function playerAttack() {
+            const pl = loadLocal(); if (!pl) return;
+            const base = Math.max(6, Math.round(6 + (pl.state.coragem / 10)));
+            const dmg = Math.max(1, base + Math.floor((Math.random() * 6) - (boss.defense / 2)));
+            boss.hp = Math.max(0, boss.hp - dmg);
+            appendBattleLog(`Você causa ${dmg} de dano.`);
+            persist(pl);
+            bossPhaseCheck();
+            updateBattleUI();
+            if (boss.hp <= 0) return bossDefeated(pl);
+            setTimeout(bossTurn, 800);
+        }
+
+        function playerDefend() {
+            const pl = loadLocal(); if (!pl) return;
+            appendBattleLog('Você assume postura defensiva (reduz dano por um turno).');
+            pl.flags._defend = (pl.flags._defend || 0) + 1;
+            persist(pl);
+            setTimeout(bossTurn, 700);
+        }
+
+        function playerUseItemFlow() {
+            const pl = loadLocal(); if (!pl) return;
+            const itemList = document.createElement('div'); itemList.style.display = 'grid'; itemList.style.gridTemplateColumns = '1fr 1fr'; itemList.style.gap = '6px'; itemList.style.marginTop = '8px';
+            (pl.inventory || []).forEach((it, idx) => {
+                if (!it) return;
+                const b = document.createElement('button'); b.className = 'ghost'; b.textContent = `${it.name} x${it.qty || 1}`;
+                b.onclick = () => {
+                    if (it.id === 'poção') { changeState({ san: +20 }, { silent: true }); appendBattleLog('Você bebeu uma poção — sanidade restaurada.'); pl.inventory[idx].qty = (pl.inventory[idx].qty || 1) - 1; if (pl.inventory[idx].qty <= 0) pl.inventory[idx] = null; persist(pl); renderInventory(pl); updateHUD(pl.state); }
+                    else if (it.id === 'simbolo_rev') { changeState({ medo: -12 }, { silent: true }); appendBattleLog('Símbolo da Revelação usado — medo reduzido.'); }
+                    else if (it.id === 'fragmento_mem') { changeState({ san: +30 }, { silent: true }); appendBattleLog('Fragmento integrado — lembrança restaurada.'); pl.inventory[idx] = null; persist(pl); renderInventory(pl); updateHUD(pl.state); }
+                    else if (it.id === 'coracao_verdade') { appendBattleLog('Você empunha o Coração da Verdade — efeito massivo!'); const dmg = 30 + Math.round((pl.state.coragem / 2)); boss.hp = Math.max(0, boss.hp - dmg); appendBattleLog(`Coração causa ${dmg} de dano direto.`); persist(pl); bossPhaseCheck(); updateBattleUI(); if (boss.hp <= 0) return bossDefeated(pl); }
+                    else { appendBattleLog('Nada acontece com esse item no combate.'); }
+                    itemList.remove();
+                    setTimeout(bossTurn, 800);
+                };
+                itemList.appendChild(b);
+            });
+            const cancel = document.createElement('button'); cancel.className = 'ghost'; cancel.textContent = 'Cancelar'; cancel.onclick = () => itemList.remove();
+            itemList.appendChild(cancel);
+            puzzleBox.appendChild(itemList);
+        }
+
+        function playerFlee() {
+            appendBattleLog('Você tenta recuar... a Sentinela empurra sua mente de volta.');
+            const pl = loadLocal(); if (!pl) return;
+            const chance = Math.min(0.6, 0.15 + (pl.state.coragem / 200));
+            if (Math.random() < chance) { appendBattleLog('Você recuou com sucesso. Batalha terminada.'); createCheckpoint('flee-success'); endBattleUI(); }
+            else { appendBattleLog('Falha. A Sentinela aproveita e ataca direitamente.'); setTimeout(bossTurn, 600); }
+        }
+
+        function bossTurn() {
+            const pl = loadLocal(); if (!pl) return;
+            const fearFactor = (pl.state.sanidade < 40) ? 1.35 : (pl.state.sanidade < 70 ? 1.1 : 1.0);
+            const dmgRoll = Math.max(3, Math.round(boss.atk * fearFactor + (Math.random() * 6)));
+            const defended = (pl.flags && pl.flags._defend && pl.flags._defend > 0);
+            const finalDmg = defended ? Math.max(1, Math.round(dmgRoll / 2)) : dmgRoll;
+            changeState({ san: -finalDmg, medo: +Math.round(finalDmg / 3) }, { silent: true });
+            appendBattleLog(`Sentinela ataca — sanidade -${finalDmg}.`);
+            if (defended) { pl.flags._defend = Math.max(0, (pl.flags._defend || 1) - 1); persist(pl); }
+            bossPhaseCheck(); updateBattleUI();
+            if (pl.state.sanidade <= 0) { appendBattleLog('Sua sanidade se esvaiu por completo...'); autoRestoreOnDefeat(); endBattleUI(); }
+        }
+
+        function bossPhaseCheck() {
+            const perc = (boss.hp / boss.maxHp) * 100;
+            if (perc < 60 && boss.phase === 1) { boss.phase = 2; appendBattleLog('A Sentinela muda — vozes abafadas viram coro.'); createCheckpoint('boss-phase-2'); boss.atk = Math.round(boss.atk * 1.15); boss.defense = Math.round(boss.defense * 1.1); }
+            if (perc < 30 && boss.phase === 2) { boss.phase = 3; appendBattleLog('A Sentinela se torna quase corpórea — a pressão é monstruosa.'); createCheckpoint('boss-phase-3'); boss.atk = Math.round(boss.atk * 1.35); boss.defense = Math.round(boss.defense * 1.25); }
+        }
+
+        function updateBattleUI() {
+            title.textContent = `${boss.name} — HP: ${boss.hp}/${boss.maxHp} • Fase ${boss.phase}`;
+            bossInner.style.width = ((boss.hp / boss.maxHp) * 100) + '%';
+            const pl = loadLocal(); if (info) info.innerHTML = `<p>Sanidade: ${pl.state.sanidade} • Medo: ${pl.state.medo} • Coragem: ${pl.state.coragem}</p>`;
+        }
+
+        function bossDefeated(pl) {
+            appendBattleLog('A Sentinela vacila — algo rompe o silêncio.');
+            persist(pl); createCheckpoint('boss-defeated');
+            if (pl.inventory && pl.inventory.some(it => it && it.id === 'coracao_verdade')) {
+                appendBattleLog('O Coração da Verdade vibra e consome o vazio — você sobreviveu.');
+                playCutscene(['A Sentinela se desfaz. Uma porta se abre para a luz.'], () => { pl.flags.bossResolved = true; persist(pl); applySave(pl); });
+            } else {
+                appendBattleLog('Você venceu, mas algo ainda falta... O final permanece ambíguo.');
+                playCutscene(['A Sentinela recua. Você sobreviveu, mas não inteiro.'], () => { pl.flags.bossResolved = true; persist(pl); applySave(pl); });
+            }
+            endBattleUI();
+        }
+
+        function endBattleUI() {
+            setTimeout(() => { if (puzzleBox) { puzzleBox.style.display = 'none'; puzzleBox.innerHTML = ''; } showStory(loadLocal()); }, 800);
+        }
+
+        btnAttack.onclick = playerAttack;
+        btnDefend.onclick = playerDefend;
+        btnUseItem.onclick = playerUseItemFlow;
+        btnFlee.onclick = playerFlee;
+
+        appendBattleLog('Batalha iniciada — escolha sua ação. Use itens sabiamente.');
+    }
+
+    /* next flow */
+    if (nextBtn) nextBtn.addEventListener('click', function () {
+        const save = loadLocal(); if (!save) return alert('Crie um perfil.');
+        const ch = save.progress.chapter, pt = save.progress.part;
+        const unsolved = puzzles[ch] && !save.solved[ch][0];
+        if (unsolved) { openPuzzle(ch); return; }
+        if (pt < chapters[ch].length - 1) {
+            save.progress.part++; persist(save); applySave(save);
+            showStory(save); log(`Avançou para parte ${save.progress.part + 1} do cap ${save.progress.chapter + 1}`);
+        } else {
+            if (ch < chapters.length - 1) {
+                playCutscene([`Você deixou o Capítulo ${ch + 1}. Um presságio ecoa...`, `Próximo: Capítulo ${ch + 2}`], function () {
+                    save.progress.chapter++; save.progress.part = 0; persist(save); applySave(save);
+                    showStory(save); createCheckpoint('chapter-advance'); log('Capítulo desbloqueado.');
+                });
+            } else {
+                initiateBossBattle();
+            }
+        }
     });
-    quickLoad.addEventListener('click', () => {
+
+    /* quick save/load */
+    if (quickSave) quickSave.addEventListener('click', function () {
+        const save = loadLocal(); if (!save) return alert('Sem perfil.');
+        const arr = loadSlots(); arr[0] = save; saveSlots(arr); renderSlotsUI(); createCheckpoint('quick-save'); alert('Quick saved.');
+    });
+    if (quickLoad) quickLoad.addEventListener('click', function () {
         const arr = loadSlots(); if (!arr[0]) return alert('Slot rápido vazio.'); localStorage.setItem(SAVE_KEY, JSON.stringify(arr[0])); applySave(arr[0]); alert('Quick loaded.');
     });
 
-    // create profile
-    btnCreate.addEventListener('click', () => {
-        const name = playerName.value.trim(); const age = parseInt(playerAge.value, 10); const code = playerCode.value.trim();
+    /* profile create/clear */
+    if (btnCreate) btnCreate.addEventListener('click', function () {
+        const name = playerName ? playerName.value.trim() : ''; const age = playerAge ? parseInt(playerAge.value, 10) : 0; const code = playerCode ? playerCode.value.trim() : '';
         if (!name || !age || !code) return alert('Preencha todos os campos.');
         if (age < 15) return alert('Idade mínima: 15 anos.');
         const existing = loadLocal();
@@ -379,62 +501,61 @@
             if (!confirm('Perfil local diferente existe — sobrescrever?')) return;
         }
         const save = createSave(name, age, code);
-        // initial starter items relevant to story
         save.inventory = [{ ...ITEM_LIBRARY['vela'], qty: 1 }, { ...ITEM_LIBRARY['chave_andar'], qty: 1 }, null, null, null, null, null, null, null, null, null, null];
-        persist(save); applySave(save); renderSlots(); log('Perfil criado: ' + name);
-        playCutscene([`Bem-vindo, ${name}. O prédio observa.`], () => alert('Entrada registrada. Boa sorte.'));
+        persist(save); applySave(save); renderSlotsUI(); log('Perfil criado: ' + name);
+        createCheckpoint('profile-created');
+        playCutscene([`Bem-vindo, ${name}. O prédio observa.`], function () { log('Entrada registrada. Boa sorte.'); });
     });
-
-    btnClear.addEventListener('click', () => {
+    if (btnClear) btnClear.addEventListener('click', function () {
         if (!confirm('Apagar dados locais?')) return;
-        localStorage.removeItem(SAVE_KEY); renderSlots(); inventoryGrid.innerHTML = ''; invDesc.textContent = 'Dados apagados.'; storyBox.textContent = 'Perfil apagado'; alert('Apagado.');
+        localStorage.removeItem(SAVE_KEY); renderSlotsUI(); if (inventoryGrid) inventoryGrid.innerHTML = ''; if (invDesc) invDesc.textContent = 'Dados apagados.'; if (storyBox) storyBox.textContent = 'Perfil apagado'; alert('Apagado.');
     });
 
-    // export/import slots
-    exportAll.addEventListener('click', () => {
+    /* export/import */
+    if (exportAll) exportAll.addEventListener('click', function () {
         const b = new Blob([JSON.stringify(loadSlots(), null, 2)], { type: 'application/json' }); const u = URL.createObjectURL(b);
         const a = document.createElement('a'); a.href = u; a.download = `sombra_saves_${new Date().toISOString()}.json`; a.click(); URL.revokeObjectURL(u); log('Export ok');
     });
-    importAll.addEventListener('click', () => importFile.click());
-    importFile.addEventListener('change', e => {
+    if (importAll) importAll.addEventListener('click', function () { if (importFile) importFile.click(); });
+    if (importFile) importFile.addEventListener('change', function (e) {
         const f = e.target.files[0]; if (!f) return;
         const r = new FileReader();
-        r.onload = ev => { try { const parsed = JSON.parse(ev.target.result); if (!Array.isArray(parsed)) throw new Error('Formato inválido'); while (parsed.length < 5) parsed.push(null); saveSlots(parsed.slice(0, 5)); renderSlots(); alert('Import ok'); } catch (err) { alert('Falha import: ' + err.message); } };
+        r.onload = function (ev) {
+            try {
+                const parsed = JSON.parse(ev.target.result);
+                if (!Array.isArray(parsed)) throw new Error('Formato inválido');
+                while (parsed.length < 5) parsed.push(null);
+                saveSlots(parsed.slice(0, 5)); renderSlotsUI(); alert('Import ok');
+            } catch (err) { alert('Falha import: ' + err.message); }
+        };
         r.readAsText(f); e.target.value = '';
     });
 
-    // render initial slots and load if exists
-    function renderSlots() { const arr = loadSlots(); if (!Array.isArray(arr)) { saveSlots([null, null, null, null, null]); } const current = loadSlots(); slotsContainer.innerHTML = ''; current.forEach((s, i) => { const el = document.createElement('div'); el.style.display = 'flex'; el.style.justifyContent = 'space-between'; el.style.alignItems = 'center'; el.style.gap = '6px'; el.style.marginTop = '6px'; el.innerHTML = `<div>${s ? `<strong>Slot ${i + 1}</strong> <small style="color:var(--muted)">${s.meta.name}</small>` : `<strong>Slot ${i + 1}</strong> <small style="color:var(--muted)">vazio</small>`}</div>`; const actions = document.createElement('div'); const bS = document.createElement('button'); bS.className = 'ghost'; bS.textContent = s ? 'Sobrescrever' : 'Salvar aqui'; bS.onclick = () => saveToSlot(i); const bL = document.createElement('button'); bL.className = 'ghost'; bL.textContent = 'Carregar'; bL.onclick = () => loadFromSlot(i); const bD = document.createElement('button'); bD.className = 'ghost'; bD.textContent = 'Excluir'; bD.onclick = () => { if (confirm('Excluir?')) { const a = loadSlots(); a[i] = null; saveSlots(a); renderSlots(); } }; actions.appendChild(bS); actions.appendChild(bL); actions.appendChild(bD); el.appendChild(actions); slotsContainer.appendChild(el); }); }
-    function saveToSlot(i) { const s = loadLocal(); if (!s) return alert('Sem perfil.'); const a = loadSlots(); a[i] = s; saveSlots(a); renderSlots(); alert('Salvo slot ' + (i + 1)); }
-    function loadFromSlot(i) { const a = loadSlots(); if (!a[i]) return alert('Slot vazio.'); localStorage.setItem(SAVE_KEY, JSON.stringify(a[i])); applySave(a[i]); renderInventory(a[i]); renderSlots(); alert('Carregado slot ' + (i + 1)); }
+    /* theme toggle */
+    if (themeToggle) themeToggle.addEventListener('click', function () { document.body.classList.toggle('light'); });
 
-    // theme toggle
-    themeToggle.addEventListener('click', () => document.body.classList.toggle('light'));
-
-    // helpers to map item reward name to ITEM_LIBRARY key
+    /* util */
     function getItemByRewardName(name) {
         if (!name) return ITEM_LIBRARY['chave_andar'];
         const key = name.toLowerCase().replace(/\s+/g, '_');
         return ITEM_LIBRARY[key] || ITEM_LIBRARY['chave_andar'];
     }
 
-    // final apply function
     function applySave(save) {
         if (!save) return;
         renderInventory(save); updateHUD(save.state); showStory(save);
     }
 
-    // updateHUD uses earlier function updateHUD
-    function updateHUD(state) { sanVal.textContent = state.sanidade; medoVal.textContent = state.medo; corVal.textContent = state.coragem; sanBar.style.width = state.sanidade + '%'; medoBar.style.width = state.medo + '%'; corBar.style.width = state.coragem + '%'; if (state.medo > 70) blood.classList.add('fast'); else blood.classList.remove('fast'); }
-
-    // init
+    /* init */
     (function init() {
         if (!Array.isArray(loadSlots())) saveSlots([null, null, null, null, null]);
-        renderSlots();
+        renderSlotsUI();
         const existing = loadLocal();
-        if (existing) { applySave(existing); log('Perfil carregado do local'); } else { storyBox.textContent = 'Crie um perfil à esquerda.'; }
-        // expose small debug
-        window.SombraFinal = { loadLocal, persist, loadSlots, saveSlots, ITEM_LIBRARY };
+        if (existing) { applySave(existing); log('Perfil carregado do local'); } else { if (storyBox) storyBox.textContent = 'Crie um perfil à esquerda.'; }
+        startPsychEvents();
+        if ((loadCheckpoints() || []).length === 0 && existing) createCheckpoint('initial');
+        setInterval(function () { createCheckpoint('autosave'); }, 22000);
+        window.SombraFinal = { loadLocal, persist, loadSlots, saveSlots, ITEM_LIBRARY, listCheckpoints, restoreCheckpointByIndex, createCheckpoint, initiateBossBattle };
     })();
 
 })();
